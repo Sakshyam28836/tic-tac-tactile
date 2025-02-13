@@ -1,12 +1,15 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GameBoard } from "@/components/GameBoard";
 import { GameModeSelector } from "@/components/GameModeSelector";
 import { DifficultySelector } from "@/components/DifficultySelector";
 import { checkWinner, getAIMove } from "@/utils/gameLogic";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Info } from "lucide-react";
+import { Auth } from "@/components/Auth";
+import { Leaderboard } from "@/components/Leaderboard";
+import { supabase } from "@/lib/supabase";
+import { Link } from "react-router-dom";
 
 type GameMode = "ai" | "player" | null;
 type Difficulty = "easy" | "medium" | "hard" | null;
@@ -21,6 +24,55 @@ const Index = () => {
   );
   const [gameEnded, setGameEnded] = useState(false);
   const [isAIThinking, setIsAIThinking] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [showGame, setShowGame] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const updateGameStats = async (result: 'win' | 'loss' | 'draw') => {
+    if (!user) return;
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        await supabase
+          .from('profiles')
+          .update({
+            total_games: profile.total_games + 1,
+            wins: profile.wins + (result === 'win' ? 1 : 0),
+            losses: profile.losses + (result === 'loss' ? 1 : 0),
+            draws: profile.draws + (result === 'draw' ? 1 : 0),
+          })
+          .eq('id', user.id);
+
+        await supabase
+          .from('game_history')
+          .insert({
+            user_id: user.id,
+            opponent_type: gameMode,
+            difficulty: difficulty,
+            result,
+          });
+      }
+    } catch (error) {
+      console.error('Error updating game stats:', error);
+    }
+  };
 
   const makeAIMove = (currentBoard: (string | null)[]) => {
     setIsAIThinking(true);
@@ -65,6 +117,7 @@ const Index = () => {
           description: `${result.winner} wins!`,
         });
       }
+      updateGameStats(result.winner);
       return;
     }
 
@@ -89,6 +142,47 @@ const Index = () => {
     setGameMode(null);
     setDifficulty(null);
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="w-full max-w-4xl space-y-8">
+          <h1 className="text-4xl font-bold text-center mb-8">Tic-Tac-Toe</h1>
+          <div className="grid md:grid-cols-2 gap-8">
+            <Auth />
+            <div className="space-y-6">
+              <Leaderboard />
+              <Link to="/info">
+                <Button variant="outline" className="w-full">
+                  <Info className="w-4 h-4 mr-2" />
+                  How to Play
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!showGame) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center space-y-6">
+          <h1 className="text-4xl font-bold">Welcome to Tic-Tac-Toe</h1>
+          <div className="space-x-4">
+            <Button onClick={() => setShowGame(true)}>Start Game</Button>
+            <Link to="/info">
+              <Button variant="outline">
+                <Info className="w-4 h-4 mr-2" />
+                How to Play
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!gameMode) {
     return (
