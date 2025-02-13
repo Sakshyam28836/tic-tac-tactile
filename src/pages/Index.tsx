@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { GameBoard } from "@/components/GameBoard";
 import { GameModeSelector } from "@/components/GameModeSelector";
 import { DifficultySelector } from "@/components/DifficultySelector";
@@ -20,9 +20,35 @@ const Index = () => {
     null
   );
   const [gameEnded, setGameEnded] = useState(false);
+  const [isAIThinking, setIsAIThinking] = useState(false);
+
+  const makeAIMove = (currentBoard: (string | null)[]) => {
+    setIsAIThinking(true);
+    setTimeout(() => {
+      const aiMove = getAIMove(currentBoard, difficulty!);
+      const aiBoard = [...currentBoard];
+      aiBoard[aiMove] = "O";
+      setBoard(aiBoard);
+      
+      const aiResult = checkWinner(aiBoard);
+      if (aiResult) {
+        setWinningCombination(aiResult.combination);
+        setGameEnded(true);
+        if (aiResult.winner === "draw") {
+          toast("Game Over!", { description: "It's a draw!" });
+        } else {
+          toast("Game Over!", {
+            description: `${aiResult.winner} wins!`,
+          });
+        }
+      }
+      setCurrentPlayer("X");
+      setIsAIThinking(false);
+    }, 500);
+  };
 
   const handleCellClick = (index: number) => {
-    if (board[index] || gameEnded) return;
+    if (board[index] || gameEnded || isAIThinking) return;
 
     const newBoard = [...board];
     newBoard[index] = currentPlayer;
@@ -42,30 +68,9 @@ const Index = () => {
       return;
     }
 
-    if (gameMode === "ai" && currentPlayer === "X") {
+    if (gameMode === "ai") {
       setCurrentPlayer("O");
-      // Delay AI move for better UX
-      setTimeout(() => {
-        const aiMove = getAIMove(newBoard, difficulty!);
-        const aiBoard = [...newBoard];
-        aiBoard[aiMove] = "O";
-        setBoard(aiBoard);
-        
-        const aiResult = checkWinner(aiBoard);
-        if (aiResult) {
-          setWinningCombination(aiResult.combination);
-          setGameEnded(true);
-          if (aiResult.winner === "draw") {
-            toast("Game Over!", { description: "It's a draw!" });
-          } else {
-            toast("Game Over!", {
-              description: `${aiResult.winner} wins!`,
-            });
-          }
-        } else {
-          setCurrentPlayer("X");
-        }
-      }, 500);
+      makeAIMove(newBoard);
     } else {
       setCurrentPlayer(currentPlayer === "X" ? "O" : "X");
     }
@@ -76,6 +81,7 @@ const Index = () => {
     setCurrentPlayer("X");
     setWinningCombination(null);
     setGameEnded(false);
+    setIsAIThinking(false);
   };
 
   const startOver = () => {
@@ -143,6 +149,8 @@ const Index = () => {
           <p className="text-lg font-medium">
             {gameEnded
               ? "Game Over!"
+              : isAIThinking
+              ? "AI is thinking..."
               : `Current Player: ${currentPlayer}`}
           </p>
         </div>
