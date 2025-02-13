@@ -39,8 +39,18 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const updateGameStats = async (result: 'win' | 'loss' | 'draw') => {
+  const updateGameStats = async (winner: string | null) => {
     if (!user) return;
+
+    let result: 'win' | 'loss' | 'draw';
+    
+    if (winner === 'draw') {
+      result = 'draw';
+    } else if (winner === 'X') {
+      result = 'win';
+    } else {
+      result = 'loss';
+    }
 
     try {
       const { data: profile } = await supabase
