@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Brain, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
+import Footer from "@/components/Footer";
 
 const Info = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const Info = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-navy-900 to-navy-950">
+    <div className="min-h-screen flex flex-col items-center justify-between p-4 bg-gradient-to-b from-navy-900 to-navy-950">
       <div className="w-full max-w-3xl space-y-8 text-center">
         <Link to="/">
           <Button variant="ghost" className="mb-4 text-white">
@@ -88,6 +89,7 @@ const Info = () => {
           </div>
         </Card>
       </div>
+      <Footer />
     </div>
   );
 };

@@ -10,6 +10,7 @@ import { Auth } from "@/components/Auth";
 import { Leaderboard } from "@/components/Leaderboard";
 import { supabase } from "@/lib/supabase";
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 
 type GameMode = "ai" | "player" | null;
 type Difficulty = "easy" | "medium" | "hard" | null;
@@ -156,7 +157,7 @@ const Index = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex flex-col items-center justify-between p-4 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="w-full max-w-4xl space-y-8">
           <h1 className="text-4xl font-bold text-center mb-8">Tic-Tac-Toe</h1>
           <div className="grid md:grid-cols-2 gap-8">
@@ -172,13 +173,14 @@ const Index = () => {
             </div>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (!showGame) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex flex-col items-center justify-between p-4 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="text-center space-y-6">
           <h1 className="text-4xl font-bold">Welcome to Tic-Tac-Toe</h1>
           <div className="space-x-4">
@@ -191,13 +193,14 @@ const Index = () => {
             </Link>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (!gameMode) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex flex-col items-center justify-between p-4 bg-gradient-to-br from-gray-50 to-gray-100">
         <h1 className="text-4xl font-bold mb-12 text-center animate-fade-down">
           Tic-Tac-Toe
         </h1>
@@ -208,14 +211,14 @@ const Index = () => {
 
   if (gameMode === "ai" && !difficulty) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex flex-col items-center justify-between p-4 bg-gradient-to-br from-gray-50 to-gray-100">
         <DifficultySelector onSelectDifficulty={setDifficulty} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex flex-col items-center justify-between p-4 bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="space-y-8 w-full max-w-lg">
         <div className="flex justify-between items-center animate-fade-down">
           <h2 className="text-2xl font-semibold">
@@ -260,6 +263,7 @@ const Index = () => {
           </p>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
