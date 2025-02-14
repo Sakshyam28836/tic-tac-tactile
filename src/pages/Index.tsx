@@ -9,13 +9,12 @@ import { RefreshCw, Info } from "lucide-react";
 import { Auth } from "@/components/Auth";
 import { Leaderboard } from "@/components/Leaderboard";
 import { supabase } from "@/lib/supabase";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 type GameMode = "ai" | "player" | null;
 type Difficulty = "easy" | "medium" | "hard" | null;
 
 const Index = () => {
-  const navigate = useNavigate();
   const [gameMode, setGameMode] = useState<GameMode>(null);
   const [difficulty, setDifficulty] = useState<Difficulty>(null);
   const [board, setBoard] = useState<(string | null)[]>(Array(9).fill(null));
@@ -29,21 +28,6 @@ const Index = () => {
   const [showGame, setShowGame] = useState(false);
 
   useEffect(() => {
-    const hasVisited = sessionStorage.getItem('hasVisited');
-    if (!hasVisited) {
-      sessionStorage.setItem('hasVisited', 'true');
-      navigate('/info');
-      return;
-    }
-
-    const selectedDifficulty = sessionStorage.getItem('selectedDifficulty') as Difficulty;
-    if (selectedDifficulty) {
-      setDifficulty(selectedDifficulty);
-      setGameMode('ai');
-      setShowGame(true);
-      sessionStorage.removeItem('selectedDifficulty'); // Clear it after using
-    }
-
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
@@ -53,7 +37,7 @@ const Index = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, []);
 
   const updateGameStats = async (winner: string | null) => {
     if (!user) return;
